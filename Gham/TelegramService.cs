@@ -3,7 +3,7 @@ using Telegram.Bot.Extensions.Polling;
 
 namespace Gham
 {
-    public class Gham
+    public class TelegramService
     {
         private ITelegramBotClient _botClient;
         private Handler _handler;
@@ -11,17 +11,18 @@ namespace Gham
         private ReceiverOptions _options;
         public string Token { get; private set; }
         public bool IsWork { get; private set; }   
-        public Gham(string token)
+        public TelegramService(string token)
         {
             Token = token;
         }
+
 
         public async Task Start()
         {
             try
             {
                 _botClient = new TelegramBotClient(Token);
-                _handler = new Handler();
+                _handler = new Handler(_botClient);
                 _cts = new CancellationTokenSource();
                 _options = new ReceiverOptions { AllowedUpdates = { } };
 

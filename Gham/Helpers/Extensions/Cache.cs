@@ -4,24 +4,27 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 
 namespace Gham.Helpers.Extensions
 {
     public static class Cache
     {
         static Dictionary<long, UserCache> _userHandlerData = new();
-        public static void CreateCacheData(this ITelegramBotClient bot, long userId)
+        public static void CreateCacheData(this Update update)
         {
-            ClearCacheData(bot, userId);
+            long userId = update.GetChatId();
+            ClearCacheData(update);
             _userHandlerData.Add(userId, new UserCache());
         }
 
-        public static KeyValuePair<long, UserCache> GetCacheData(this ITelegramBotClient bot, long userId)
+        public static KeyValuePair<long, UserCache> GetCacheData(this Update update)
         {
+            long userId = update.GetChatId();
             var data = _userHandlerData.FirstOrDefault(x => x.Key == userId);
             if (data.Equals(default(KeyValuePair<long, UserCache>)))
             {
-                CreateCacheData(bot, userId);
+                CreateCacheData(update);
                 return _userHandlerData.FirstOrDefault(x => x.Key == userId);
             }
             else
@@ -30,30 +33,25 @@ namespace Gham.Helpers.Extensions
             }
         }
 
-        public static void ClearCacheData(this ITelegramBotClient bot, long userId)
+        public static void ClearCacheData(this Update update)
         {
-            if (HasCacheData(bot, userId))
+            long userId = update.GetChatId();
+            if (HasCacheData(update))
             {
                 _userHandlerData.Remove(userId);
             }
 
         }
 
-        public static bool HasCacheData(this ITelegramBotClient bot, long userId)
+        public static bool HasCacheData(this Update update)
         {
+            long userId = update.GetChatId();
             return _userHandlerData.ContainsKey(userId);
         }
     }
 
     public class UserCache
     {
-        public int? IncidentId { get; set; }
-        public int? ExecuterId { get; set; }
 
-        public void Clear()
-        {
-            IncidentId = null;
-            ExecuterId = null;
-        }
     }
 }

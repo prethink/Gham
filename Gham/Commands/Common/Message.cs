@@ -23,8 +23,7 @@ namespace Gham.Commands.Common
 
         public async Task Send(Update update, string msg, OptionMessage option = null)
         {
-            try
-            {
+
                 long chatId = update.GetChatId();
 
                 if (string.IsNullOrWhiteSpace(msg))
@@ -74,17 +73,12 @@ namespace Gham.Commands.Common
                         throw new NotImplementedException();
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                //TODO Logging exception
-            }
+
         }
 
         public async Task Edit(Update update, string msg, OptionMessage option = null)
         {
-            try
-            {
+     
                 long chatId = update.GetChatId();
                 long messageId = update.Message.MessageId;
 
@@ -95,12 +89,8 @@ namespace Gham.Commands.Common
                 //        messageId: messageId,
                 //        replyMarkup: inlineMenu,
                 //        cancellationToken: cancellationToken);
-            }
-
-            catch (Exception ex)
-            {
-                //TODO Logging exception
-            }
+ 
         }
+
     }
 }

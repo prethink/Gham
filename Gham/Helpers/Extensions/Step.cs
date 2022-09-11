@@ -10,31 +10,35 @@ namespace Gham.Helpers.Extensions
 {
     public static class Step
     {
-        public delegate Task Command(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken);
+        public delegate Task Command(Update update);
         static Dictionary<long, Command> _step = new();
 
-        public static void RegisterNextStep(this ITelegramBotClient bot, long userId, Command command)
+        public static void RegisterNextStep(this Update update, Command command)
         {
-            ClearStepUser(bot, userId);
+            long userId = update.GetChatId();
+            ClearStepUser(update);
             _step.Add(userId, command);
         }
 
-        public static KeyValuePair<long, Command> GetStepOrNull(this ITelegramBotClient bot, long userId)
+        public static KeyValuePair<long, Command> GetStepOrNull(this Update update)
         {
+            long userId = update.GetChatId();
             return _step.FirstOrDefault(x => x.Key == userId);
         }
 
-        public static void ClearStepUser(this ITelegramBotClient bot, long userId)
+        public static void ClearStepUser(this Update update)
         {
-            if (HasStep(bot, userId))
+            long userId = update.GetChatId();
+            if (HasStep(update))
             {
                 _step.Remove(userId);
             }
 
         }
 
-        public static bool HasStep(this ITelegramBotClient bot, long userId)
+        public static bool HasStep(this Update update)
         {
+            long userId = update.GetChatId();
             return _step.ContainsKey(userId);
         }
     }

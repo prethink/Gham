@@ -16,7 +16,7 @@ namespace Gham.Helpers
         /// <param name="menu">Коллекция меню</param>
         /// <param name="mainMenu">Есть не пусто, добавляет главное меню</param>
         /// <returns>Готовое меню</returns>
-        public static ReplyKeyboardMarkup GenerateMenu(int maxColumn, List<string> menu, string mainMenu = "")
+        public static ReplyKeyboardMarkup GenerateReplyMenu(int maxColumn, List<string> menu, string mainMenu = "")
         {
             List<List<KeyboardButton>> buttons = new();
 
@@ -58,6 +58,27 @@ namespace Gham.Helpers
             };
 
             return replyKeyboardMarkup;
+        }
+
+        public static InlineKeyboardMarkup GenerateInlineWithCallBack()
+        {
+            InlineKeyboardMarkup inlineKeyboard = new(new[]
+                {
+                // first row
+                new []
+                {
+                    InlineKeyboardButton.WithCallbackData(text: "1.1", callbackData: "11"),
+                    InlineKeyboardButton.WithCallbackData(text: "1.2", callbackData: "12"),
+                },
+                // second row
+                new []
+                {
+                    InlineKeyboardButton.WithCallbackData(text: "2.1", callbackData: "21"),
+                    InlineKeyboardButton.WithCallbackData(text: "2.2", callbackData: "22"),
+                },
+            });
+
+            return inlineKeyboard;
         }
     }
 }

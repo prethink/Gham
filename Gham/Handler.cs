@@ -16,10 +16,12 @@ namespace Gham
 {
     public class Handler
     {
-        Router _router;
-        public Handler()
+        private ITelegramBotClient _botClient;
+        private Router _router;
+        public Handler(ITelegramBotClient botClient)
         {
-            _router = new Router();
+            _botClient = botClient;
+            _router = new Router(_botClient);
         }
         public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
         {
@@ -33,10 +35,12 @@ namespace Gham
                         await HandleMessageRoute(botClient, update, cancellationToken);
                         break;
                     case UpdateType.InlineQuery:
+                        await HandleInlineRoute(botClient, update, cancellationToken);
                         break;
                     case UpdateType.ChosenInlineResult:
                         break;
                     case UpdateType.CallbackQuery:
+                        await HandleCallbackQuery(botClient, update, cancellationToken);
                         break;
                     case UpdateType.EditedMessage:
                         break;
@@ -64,6 +68,23 @@ namespace Gham
             {
                 //TODO Logging exception
             }
+        }
+
+        private async Task HandleCallbackQuery(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            try
+            {
+                await _router.ExecuteCommandByCallBack(update);
+            }
+            catch (Exception ex)
+            {
+                //TODO Logging exception
+            }
+        }
+
+        private async Task HandleInlineRoute(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
+        {
+            
         }
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
@@ -171,10 +192,7 @@ namespace Gham
         {
             try
             {
-                var chatId = update.Message.Chat.Id;
-                var messageText = update.Message.Text;
-
-                await _router.ExecuteCommandByMessage(messageText , update);
+                await _router.ExecuteCommandByMessage(update.Message.Text, update);
             }
             catch (Exception ex)
             {

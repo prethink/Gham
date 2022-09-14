@@ -16,7 +16,7 @@ namespace Gham.Helpers
         /// <param name="menu">Коллекция меню</param>
         /// <param name="mainMenu">Есть не пусто, добавляет главное меню</param>
         /// <returns>Готовое меню</returns>
-        public static ReplyKeyboardMarkup GenerateReplyMenu(int maxColumn, List<string> menu, string mainMenu = "")
+        public static ReplyKeyboardMarkup ReplyKeyboard(int maxColumn, List<string> menu, string mainMenu = "")
         {
             List<List<KeyboardButton>> buttons = new();
 
@@ -60,25 +60,64 @@ namespace Gham.Helpers
             return replyKeyboardMarkup;
         }
 
-        public static InlineKeyboardMarkup GenerateInlineWithCallBack()
+        public static InlineKeyboardMarkup InlineCallBackOrUrl(int maxColumn, List<IInlineContent> menu)
         {
-            InlineKeyboardMarkup inlineKeyboard = new(new[]
-                {
-                // first row
-                new []
-                {
-                    InlineKeyboardButton.WithCallbackData(text: "1.1", callbackData: "11"),
-                    InlineKeyboardButton.WithCallbackData(text: "1.2", callbackData: "12"),
-                },
-                // second row
-                new []
-                {
-                    InlineKeyboardButton.WithCallbackData(text: "2.1", callbackData: "21"),
-                    InlineKeyboardButton.WithCallbackData(text: "2.2", callbackData: "22"),
-                },
-            });
+            List<List<InlineKeyboardButton>> buttons = new();
 
-            return inlineKeyboard;
+            int row = 0;
+            int currentElement = 0;
+
+            foreach (var item in menu)
+            {
+                if (currentElement == 0)
+                {
+                    buttons.Add(new List<InlineKeyboardButton>());
+                    buttons[row].Add(GetInlineButton(item));
+                }
+                else
+                {
+                    buttons[row].Add(GetInlineButton(item));
+                }
+
+                currentElement++;
+
+                if (currentElement >= maxColumn)
+                {
+                    currentElement = 0;
+                    row++;
+                }
+            }
+
+            InlineKeyboardMarkup Keyboard = new(buttons);
+            return Keyboard;
+        }
+
+        public static InlineKeyboardButton GetInlineButton(IInlineContent inlineData)
+        {
+            if(inlineData is InlineCallbackCommand)
+            {
+                return InlineKeyboardButton.WithCallbackData(inlineData.GetTextButton(), inlineData.GetContent());
+            }
+            else if(inlineData is InlineURL)
+            {
+                return InlineKeyboardButton.WithUrl(inlineData.GetTextButton(), inlineData.GetContent());
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+
+        public static InlineKeyboardMarkup UnitInlineKeyboard(params InlineKeyboardMarkup[] keyboards)
+        {
+            List<IEnumerable<InlineKeyboardButton>> buttons = new();
+            foreach (var keyboard in keyboards)
+            {
+                buttons.AddRange(keyboard.InlineKeyboard);
+            }
+            InlineKeyboardMarkup Keyboard = new(buttons);
+            return Keyboard;
         }
     }
 }

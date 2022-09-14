@@ -27,7 +27,7 @@ namespace Gham.Commands
         #endregion
 
         delegate Task CommandReplay(Update update);
-        delegate Task CommandInline(Update update,CallbackCommand command);
+        delegate Task CommandInline(Update update,InlineCallbackCommand command);
         private Dictionary<string, CommandReplay> _priorityCommand = new Dictionary<string, CommandReplay>();
         private Dictionary<string, CommandReplay> _commands = new Dictionary<string, CommandReplay>();
         private ITelegramBotClient _botClient;
@@ -100,7 +100,7 @@ namespace Gham.Commands
 
         public async Task ExecuteCommandByCallBack(Update update)
         {
-            var command = CallbackCommand.GetCommandByCallback(update.CallbackQuery.Data);
+            var command = InlineCallbackCommand.GetCommandByCallbackOrNull(update.CallbackQuery.Data);
             if(command != null)
             {
 

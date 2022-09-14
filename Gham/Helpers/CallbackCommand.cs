@@ -7,27 +7,24 @@ using System.Threading.Tasks;
 
 namespace Gham.Helpers
 {
-    public class CallbackCommand
+    public class InlineCallbackCommand : IInlineContent
     {
-        public string CommandName { get; private set; }
-        public List<string> Argumnets { get; private set; }
+        [JsonIgnore]
+        public string ButtonName { get; set; }
+        public string CommandName { get; set; }
+        public List<string> Argumnets { get; set; }
 
-        public CallbackCommand(string commandName, List<string> args)
+        public InlineCallbackCommand(string commandName, List<string> args)
         {
             CommandName = commandName;
             Argumnets = args;
         }
 
-        public override string ToString()
-        {
-            return JsonConvert.SerializeObject(this);
-        }
-
-        public static CallbackCommand GetCommandByCallback(string data)
+        public static InlineCallbackCommand GetCommandByCallbackOrNull(string data)
         {
             try
             {
-                return JsonConvert.DeserializeObject<CallbackCommand>(data);
+                return JsonConvert.DeserializeObject<InlineCallbackCommand>(data);
             }
             catch(Exception ex)
             {
@@ -35,23 +32,39 @@ namespace Gham.Helpers
             }
         }
 
-    }
-
-    public class InlineCommand : IInlineContent
-    {
-        public string Text { get; private set; }
-        public CallbackCommand Command { get; set; }
+        public string GetTextButton()
+        {
+            return ButtonName;
+        }
 
         public string GetContent()
         {
-            return Command.ToString();
+            return JsonConvert.SerializeObject(this);
+        }
+    }
+
+    public class InlineURL : IInlineContent
+    {
+        public string ButtonName { get; set; }
+        public string URL { get; set; }
+
+        public InlineURL(string buttonName, string url)
+        {
+            ButtonName = buttonName;
+            URL = url;
+        }
+
+        public string GetContent()
+        {
+            return URL;
         }
 
         public string GetTextButton()
         {
-            return Text; 
+            return ButtonName;
         }
     }
+
 
     public interface IInlineContent
     {

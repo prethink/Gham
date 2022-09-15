@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 
 namespace Gham.Helpers
 {
@@ -37,7 +38,7 @@ namespace Gham.Helpers
             return ButtonName;
         }
 
-        public string GetContent()
+        public object GetContent()
         {
             return JsonConvert.SerializeObject(this);
         }
@@ -54,9 +55,32 @@ namespace Gham.Helpers
             URL = url;
         }
 
-        public string GetContent()
+        public object GetContent()
         {
             return URL;
+        }
+
+        public string GetTextButton()
+        {
+            return ButtonName;
+        }
+    }
+
+    public class InlineWebApp : IInlineContent
+    {
+        public string ButtonName { get; set; }
+        public string WebAppUrl { get; set; }
+
+        public InlineWebApp(string buttonName, string webAppUrl)
+        {
+            ButtonName = buttonName;
+            WebAppUrl = webAppUrl;
+        }
+
+        public object GetContent()
+        {
+            var webApp = new WebAppInfo().Url = WebAppUrl;
+            return webApp;
         }
 
         public string GetTextButton()
@@ -69,7 +93,7 @@ namespace Gham.Helpers
     public interface IInlineContent
     {
         public string GetTextButton();
-        public string GetContent();
+        public object GetContent();
 
     }
 }

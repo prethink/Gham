@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Telegram.Bot.Types;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Gham.Helpers
@@ -60,7 +61,7 @@ namespace Gham.Helpers
             return replyKeyboardMarkup;
         }
 
-        public static InlineKeyboardMarkup InlineCallBackOrUrl(int maxColumn, List<IInlineContent> menu)
+        public static InlineKeyboardMarkup InlineKeyboard(int maxColumn, List<IInlineContent> menu)
         {
             List<List<InlineKeyboardButton>> buttons = new();
 
@@ -96,11 +97,15 @@ namespace Gham.Helpers
         {
             if(inlineData is InlineCallbackCommand)
             {
-                return InlineKeyboardButton.WithCallbackData(inlineData.GetTextButton(), inlineData.GetContent());
+                return InlineKeyboardButton.WithCallbackData(inlineData.GetTextButton(), inlineData.GetContent() as string);
             }
             else if(inlineData is InlineURL)
             {
-                return InlineKeyboardButton.WithUrl(inlineData.GetTextButton(), inlineData.GetContent());
+                return InlineKeyboardButton.WithUrl(inlineData.GetTextButton(), inlineData.GetContent() as string);
+            }
+            else if(inlineData is InlineWebApp)
+            {
+                return InlineKeyboardButton.WithWebApp(inlineData.GetTextButton(), inlineData.GetContent() as WebAppInfo);
             }
             else
             {

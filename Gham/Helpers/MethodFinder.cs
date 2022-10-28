@@ -24,10 +24,8 @@ namespace Gham.Helpers
         {
             string thisAssemblyName = Assembly.GetExecutingAssembly().GetName().FullName;
             var result = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => a
-                    .GetReferencedAssemblies()
-                    .Any(n => n.FullName.ToLower() == thisAssemblyName.ToLower())) // Get only assemblies that reference this assembly
-                .SelectMany(a => a.GetTypes())
+                .FirstOrDefault(x => x.FullName.ToLower() == thisAssemblyName.ToLower())
+                .GetTypes()
                 .SelectMany(t => t.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance))
                 .Where(m => m.GetCustomAttributes(type, false).Length > 0)
                 .ToArray();

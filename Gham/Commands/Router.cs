@@ -51,6 +51,8 @@ namespace Gham.Commands
         {
             _botClient              = botClient;
             messageCommands = new Dictionary<string, MessageCommand>();
+            messageCommandsPriority = new Dictionary<string, MessageCommand>();
+            inlineCommands = new Dictionary<string, MessageCommand>();
             RegisterCommnad();
         }
 

@@ -10,7 +10,7 @@ namespace Gham.Helpers.Extensions
 {
     public static class Step
     {
-        public delegate Task Command(Update update);
+        public delegate Task Command(ITelegramBotClient botClient, Update update);
         static Dictionary<long, Command> _step = new();
 
         public static void RegisterNextStep(this Update update, Command command)

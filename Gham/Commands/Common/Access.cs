@@ -1,5 +1,4 @@
-﻿using Gham.Commands.Base;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,45 +7,39 @@ using Telegram.Bot.Types;
 using Telegram.Bot;
 using static Gham.Helpers.Extensions.Step;
 using Gham.Helpers.Extensions;
+using Gham.Attributes;
 
 namespace Gham.Commands.Common
 {
-    public class Access : CommandBase
+    public class Access
     {
-        public Access(ITelegramBotClient botClient)
+        [MessageMenuHandler(false,Router.START)]
+        public static async Task Start(ITelegramBotClient botClient, Update update)
         {
-            _botClient = botClient;
+            await Message.Send(botClient, update, "Выполнена команда Start");
         }
 
-        public async Task Start(Update update)
+        public static async Task StartWithArguments(ITelegramBotClient botClient, Update update, string arg)
         {
-                var messageInstance = new Message(_botClient);
-                await messageInstance.Send(update, "Выполнена команда Start");
-        }
-
-        public async Task StartWithArguments(Update update, string arg)
-        {
-            var messageInstance = new Message(_botClient);
-            await messageInstance.Send(update, $"Выполнена команда старт с агрументом '{arg}'");
+            await Message.Send(botClient, update, $"Выполнена команда старт с агрументом '{arg}'");
         }
 
         /// <summary>
         /// Не найдена команда
         /// </summary>
-        public async Task CommandMissing(Update update)
+        public static async Task CommandMissing(ITelegramBotClient botClient, Update update, string command = "")
         {
-            var messageInstance = new Message(_botClient);
-            await messageInstance.Send(update, $"В базе не найдена команда '{update.Message.Text}'");
+            string result = !string.IsNullOrEmpty(command) ? command : update.Message.Text;
+            await Message.Send(botClient, update, $"В базе не найдена команда '{result}'");
         }
 
         /// <summary>
         /// Отображение сообщения что не хватает прав для того, чтобы использовать данный бот
         /// </summary>
-        public async Task PrivilagesMissing(Update update)
+        public static async Task PrivilagesMissing(ITelegramBotClient botClient, Update update)
         {
-            var messageInstance = new Message(_botClient);
             string msg = $"У вас не достаточно прав на использование этой команды!";
-            await messageInstance.Send(update, msg);
+            await Message.Send(botClient, update, msg);
         }
     }
 }

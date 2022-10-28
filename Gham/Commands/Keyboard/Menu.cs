@@ -1,4 +1,4 @@
-﻿using Gham.Commands.Base;
+﻿using Gham.Attributes;
 using Gham.Helpers;
 using System;
 using System.Collections.Generic;
@@ -10,14 +10,10 @@ using Telegram.Bot.Types;
 
 namespace Gham.Commands.Keyboard
 {
-    public class Menu : CommandBase
+    public class Menu
     {
-        public Menu(ITelegramBotClient botClient)
-        {
-            _botClient = botClient;
-        }
-
-        public async Task MainMenu(Update update)
+        [MessageMenuHandler(true,Router.MENU, Router.MAIN_MENU)]
+        public static async Task MainMenu(ITelegramBotClient botClient, Update update)
         {
 
             int columnCount = 1;
@@ -30,8 +26,7 @@ namespace Gham.Commands.Keyboard
             var option = new OptionMessage();
             option.MenuReplyKeyboardMarkup = menu;
 
-            var messageInstance = new Common.Message(_botClient);
-            await messageInstance.Send(update, "Выполнена команда главное меню", option);
+            await Common.Message.Send(botClient, update, "Выполнена команда главное меню", option);
         }
     }
 }

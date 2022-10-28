@@ -1,4 +1,5 @@
-﻿using Gham.Commands.Common;
+﻿using Gham.Attributes;
+using Gham.Commands.Common;
 using Gham.Commands.Keyboard;
 using Gham.Helpers;
 using Gham.Helpers.Extensions;
@@ -6,6 +7,7 @@ using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Telegram.Bot;
@@ -18,18 +20,21 @@ namespace Gham.Commands
     {
         #region RelpyCommands
         public const string START               = "/start";
+        public const string MENU                = "/menu";
+        public const string MY_ID               = "/myid";
         public const string MAIN_MENU           = "Главное меню";
         public const string INLINE_MENU         = "Inline меню";
         public const string ECHO                = "ЭХО";
+
         #endregion
 
         #region InlineCommand
         #endregion
 
-        delegate Task CommandReplay(Update update);
+        delegate Task MessageCommand(ITelegramBotClient botclient, Update update);
         delegate Task CommandInline(Update update,InlineCallbackCommand command);
-        private Dictionary<string, CommandReplay> _priorityCommand = new Dictionary<string, CommandReplay>();
-        private Dictionary<string, CommandReplay> _commands = new Dictionary<string, CommandReplay>();
+        private Dictionary<string, MessageCommand> _priorityCommand = new Dictionary<string, MessageCommand>();
+        private Dictionary<string, MessageCommand> _commands = new Dictionary<string, MessageCommand>();
         private ITelegramBotClient _botClient;
 
         private Access _accessCommand;
@@ -38,35 +43,47 @@ namespace Gham.Commands
         private Common.User _userCommand;
 
 
+        private Dictionary<string, MessageCommand> messageCommands;
+        private Dictionary<string, MessageCommand> messageCommandsPriority;
+        private Dictionary<string, MessageCommand> inlineCommands;
+
         public Router(ITelegramBotClient botClient)
         {
             _botClient              = botClient;
-
-            _accessCommand          = new Access(_botClient);
-            _menuKeyboardCommand    = new Keyboard.Menu(_botClient);
-            _menuInlineCommand      = new Inline.Menu(_botClient);
-            _userCommand            = new Common.User(_botClient);
-
-
-            RegisterPriorityCommand();
-            RegisterCommand();
+            messageCommands = new Dictionary<string, MessageCommand>();
+            RegisterCommnad();
         }
 
-        public void RegisterPriorityCommand()
+        public void RegisterCommnad()
         {
-            _priorityCommand.Add(START, _accessCommand.Start);
-            _priorityCommand.Add(MAIN_MENU, _menuKeyboardCommand.MainMenu);
-            _priorityCommand.Add(INLINE_MENU, _menuInlineCommand.MenuCallBack);
-        }
-
-        public void RegisterCommand()
-        {
-            _commands.Add(ECHO, _userCommand.Echo);
-            foreach (var command in _priorityCommand)
+            var messageMethods = MethodFinder.FindMessageMenuHandlers();
+            var inlineMethods = MethodFinder.FindInlineMenuHandlers();
+            foreach (var method in messageMethods)
             {
-                _commands.Add(command.Key,command.Value);
+                bool priority = method.GetCustomAttribute<MessageMenuHandlerAttribute>().Priority;
+                foreach (var command in method.GetCustomAttribute<MessageMenuHandlerAttribute>().Commands)
+                {
+                    Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
+                    messageCommands.Add(command, (MessageCommand)serverMessageHandler);
+                    if(priority)
+                    {
+                        messageCommandsPriority.Add(command, (MessageCommand)serverMessageHandler);
+                    }
+                }
+            }
+
+            foreach (var method in inlineMethods)
+            {
+                foreach (var command in method.GetCustomAttribute<InlineCallbackHandlerAttribute>().Commands)
+                {
+                    Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
+                    inlineCommands.Add(command, (MessageCommand)serverMessageHandler);
+
+                }
             }
         }
+
+
 
         public async Task ExecuteCommandByMessage(string command, Update update)
         {
@@ -78,20 +95,20 @@ namespace Gham.Commands
                 if(await IsHaveNextStep(command,update))
                     return;
 
-                foreach (var commandExecute in _commands)
+                foreach (var commandExecute in messageCommands)
                 {
                     if (command.ToLower() == commandExecute.Key.ToLower())
                     {
-                        await commandExecute.Value(update);
+                        await commandExecute.Value(_botClient,update);
                         return;
                     }
                 }
 
-                await _accessCommand.CommandMissing(update);
+                await Access.CommandMissing(_botClient,update);
             }
             catch(Exception ex)
             {
-
+                //TODO Logging
             }
 
         }
@@ -103,7 +120,23 @@ namespace Gham.Commands
             var command = InlineCallbackCommand.GetCommandByCallbackOrNull(update.CallbackQuery.Data);
             if(command != null)
             {
+                try
+                {
+                    foreach (var commandCallback in inlineCommands)
+                    {
+                        if (command.CommandName.ToLower() == commandCallback.Key.ToLower())
+                        {
+                            await commandCallback.Value(_botClient, update);
+                            return;
+                        }
+                    }
 
+                    await Access.CommandMissing(_botClient, update, "CallBack - " + command.CommandName);
+                }
+                catch (Exception ex)
+                {
+                    //TODO Logging
+                }
             }
         }
 
@@ -111,15 +144,15 @@ namespace Gham.Commands
         {
             if (update.HasStep())
             {
-                foreach (var commandExecute in _priorityCommand)
+                foreach (var commandExecute in messageCommandsPriority)
                 {
                     if (command.ToLower() == commandExecute.Key.ToLower())
                     {
-                        await commandExecute.Value(update);
+                        await commandExecute.Value(_botClient, update);
                         return true;
                     }
                 }
-                await update.GetStepOrNull().Value(update);
+                await update.GetStepOrNull().Value(_botClient, update);
                 return true;
             }
             return false;
@@ -132,7 +165,7 @@ namespace Gham.Commands
                 var spl = command.Split(' ');
                 if (!string.IsNullOrEmpty(spl[1]))
                 {
-                    await _accessCommand.StartWithArguments(update, spl[1]);
+                    await Access.StartWithArguments(_botClient, update, spl[1]);
                     return true;
                 }
                 return false;

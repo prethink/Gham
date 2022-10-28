@@ -1,5 +1,4 @@
-﻿using Gham.Commands.Base;
-using Gham.Helpers;
+﻿using Gham.Helpers;
 using Gham.Helpers.Extensions;
 using Microsoft.VisualBasic.FileIO;
 using System;
@@ -14,16 +13,10 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Gham.Commands.Common
 {
-    public class Message : CommandBase
+    public class Message 
     {
-        public Message(ITelegramBotClient botClient)
+        public static async Task Send(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
         {
-            _botClient = botClient;
-        }
-
-        public async Task Send(Update update, string msg, OptionMessage option = null)
-        {
-
                 long chatId = update.GetChatId();
 
                 if (string.IsNullOrWhiteSpace(msg))
@@ -33,40 +26,36 @@ namespace Gham.Commands.Common
 
                 if (option == null)
                 {
-                    var sentMessage = await _botClient.SendTextMessageAsync(
+                    var sentMessage = await botClient.SendTextMessageAsync(
                          chatId: chatId,
                          text: msg,
-                         parseMode: ParseMode.Html,
-                         cancellationToken: cancellationToken);
+                         parseMode: ParseMode.Html);
                 }
                 else
                 {
                     if (option.ClearMenu)
                     {
-                        var sentMessage = await _botClient.SendTextMessageAsync(
+                        var sentMessage = await botClient.SendTextMessageAsync(
                              chatId: chatId,
                              text: msg,
                              parseMode: ParseMode.Html,
-                             replyMarkup: new ReplyKeyboardRemove(),
-                             cancellationToken: cancellationToken);
+                             replyMarkup: new ReplyKeyboardRemove());
                     }
                     else if (option.MenuReplyKeyboardMarkup != null)
                     {
-                        var sentMessage = await _botClient.SendTextMessageAsync(
+                        var sentMessage = await botClient.SendTextMessageAsync(
                              chatId: chatId,
                         text: msg,
                              parseMode: ParseMode.Html,
-                             replyMarkup: option.MenuReplyKeyboardMarkup,
-                             cancellationToken: cancellationToken);
+                             replyMarkup: option.MenuReplyKeyboardMarkup);
                     }
                     else if (option.MenuInlineKeyboardMarkup != null)
                     {
-                        var sentMessage = await _botClient.SendTextMessageAsync(
+                        var sentMessage = await botClient.SendTextMessageAsync(
                              chatId: chatId,
                         text: msg,
                              parseMode: ParseMode.Html,
-                             replyMarkup: option.MenuInlineKeyboardMarkup,
-                             cancellationToken: cancellationToken);
+                             replyMarkup: option.MenuInlineKeyboardMarkup);
                     }
                     else
                     {
@@ -76,7 +65,7 @@ namespace Gham.Commands.Common
 
         }
 
-        public async Task Edit(Update update, string msg, OptionMessage option = null)
+        public static async Task Edit(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
         {
      
                 long chatId = update.GetChatId();

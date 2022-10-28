@@ -1,5 +1,4 @@
-﻿using Gham.Commands.Base;
-using Gham.Helpers;
+﻿using Gham.Helpers;
 using Gham.Helpers.Extensions;
 using System;
 using System.Collections.Generic;
@@ -12,13 +11,8 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Gham.Commands.Inline
 {
-    public class Menu : CommandBase
+    public class Menu
     {
-        public Menu(ITelegramBotClient botClient)
-        {
-            _botClient = botClient;
-        }
-
         public async Task MenuCallBack(Update update)
         {
             //InlineKeyboardMarkup inlineKeyboard = new(new[]

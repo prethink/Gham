@@ -1,4 +1,4 @@
-﻿using Gham.Commands.Base;
+﻿using Gham.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,29 +9,24 @@ using Telegram.Bot.Types;
 
 namespace Gham.Commands.Common
 {
-    public class User : CommandBase
+    public class User
     {
-        public User(ITelegramBotClient botClient)
+        /// <summary>
+        /// Команда для получения идентификатора пользователя/группы
+        /// </summary>
+        [MessageMenuHandler(false,Router.MY_ID)]
+        public static async Task GetMyId(ITelegramBotClient botClient, Update update)
         {
-            _botClient = botClient;
+            await Message.Send(botClient, update, $"Id - {update.Message.Chat.Id}");
         }
 
         /// <summary>
         /// Команда для получения идентификатора пользователя/группы
         /// </summary>
-        public async Task GetMyId(Update update)
+        [MessageMenuHandler(false,Router.ECHO)]
+        public static async Task Echo(ITelegramBotClient botClient, Update update)
         {
-            var messageInstance = new Message(_botClient);
-            await messageInstance.Send(update, $"Id - {update.Message.Chat.Id}");
-        }
-
-        /// <summary>
-        /// Команда для получения идентификатора пользователя/группы
-        /// </summary>
-        public async Task Echo(Update update)
-        {
-            var messageInstance = new Message(_botClient);
-            await messageInstance.Send(update, $"Вы написали {update.Message.Text}");
+            Message.Send(botClient, update, $"Вы написали {update.Message.Text}");
         }
 
     }

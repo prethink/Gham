@@ -22,7 +22,7 @@ namespace Gham.Commands.Keyboard
             menuList.Add(Router.ECHO);
             menuList.Add(Router.INLINE_MENU);
 
-            var menu = MenuGenerator.ReplyKeyboard(columnCount, menuList, Router.MAIN_MENU);
+            var menu = MenuGenerator.ReplyKeyboard(columnCount, menuList, true, Router.MAIN_MENU);
             var option = new OptionMessage();
             option.MenuReplyKeyboardMarkup = menu;
 

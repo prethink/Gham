@@ -17,7 +17,22 @@ namespace Gham.Helpers
         /// <param name="menu">Коллекция меню</param>
         /// <param name="mainMenu">Есть не пусто, добавляет главное меню</param>
         /// <returns>Готовое меню</returns>
-        public static ReplyKeyboardMarkup ReplyKeyboard(int maxColumn, List<string> menu, string mainMenu = "")
+        public static ReplyKeyboardMarkup ReplyKeyboard(int maxColumn, List<string> menu, bool resizeKeyboard = true, string mainMenu = "")
+        {
+            var buttons = ReplyButtons(maxColumn, menu, mainMenu);
+            return ReplyKeyboard(buttons, resizeKeyboard);
+        }
+
+        public static ReplyKeyboardMarkup ReplyKeyboard(List<List<KeyboardButton>> buttons, bool resizeKeyboard)
+        {
+            ReplyKeyboardMarkup replyKeyboardMarkup = new(buttons)
+            {
+                ResizeKeyboard = resizeKeyboard
+            };
+            return replyKeyboardMarkup;
+        }
+
+        public static List<List<KeyboardButton>> ReplyButtons(int maxColumn, List<string> menu, string mainMenu = "")
         {
             List<List<KeyboardButton>> buttons = new();
 
@@ -53,12 +68,13 @@ namespace Gham.Helpers
                 buttons[row].Add(mainMenu);
             }
 
-            ReplyKeyboardMarkup replyKeyboardMarkup = new(buttons)
-            {
-                ResizeKeyboard = true
-            };
+            return buttons;
+        }
 
-            return replyKeyboardMarkup;
+        public static List<List<KeyboardButton>> ReplyButtons(List<List<KeyboardButton>> buttonsOne, List<List<KeyboardButton>> buttonsTwo)
+        {
+            buttonsOne.AddRange(buttonsTwo);
+            return buttonsOne;
         }
 
         public static InlineKeyboardMarkup InlineKeyboard(int maxColumn, List<IInlineContent> menu)

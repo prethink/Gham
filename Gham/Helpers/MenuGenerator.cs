@@ -77,7 +77,19 @@ namespace Gham.Helpers
             return buttonsOne;
         }
 
+        public static InlineKeyboardMarkup InlineKeyboard(List<List<InlineKeyboardButton>> buttons)
+        {
+            InlineKeyboardMarkup Keyboard = new(buttons);
+            return Keyboard;
+        }
+
         public static InlineKeyboardMarkup InlineKeyboard(int maxColumn, List<IInlineContent> menu)
+        {
+            var buttons = InlineButtons(maxColumn, menu);
+            return InlineKeyboard(buttons);
+        }
+
+        public static List<List<InlineKeyboardButton>> InlineButtons(int maxColumn, List<IInlineContent> menu)
         {
             List<List<InlineKeyboardButton>> buttons = new();
 
@@ -105,21 +117,20 @@ namespace Gham.Helpers
                 }
             }
 
-            InlineKeyboardMarkup Keyboard = new(buttons);
-            return Keyboard;
+            return buttons;
         }
 
         public static InlineKeyboardButton GetInlineButton(IInlineContent inlineData)
         {
-            if(inlineData is InlineCallbackCommand)
+            if (inlineData is InlineCallbackCommand)
             {
                 return InlineKeyboardButton.WithCallbackData(inlineData.GetTextButton(), inlineData.GetContent() as string);
             }
-            else if(inlineData is InlineURL)
+            else if (inlineData is InlineURL)
             {
                 return InlineKeyboardButton.WithUrl(inlineData.GetTextButton(), inlineData.GetContent() as string);
             }
-            else if(inlineData is InlineWebApp)
+            else if (inlineData is InlineWebApp)
             {
                 return InlineKeyboardButton.WithWebApp(inlineData.GetTextButton(), inlineData.GetContent() as WebAppInfo);
             }
@@ -128,7 +139,6 @@ namespace Gham.Helpers
                 throw new NotImplementedException();
             }
         }
-
 
         public static InlineKeyboardMarkup UnitInlineKeyboard(params InlineKeyboardMarkup[] keyboards)
         {

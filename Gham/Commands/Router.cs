@@ -3,6 +3,7 @@ using Gham.Commands.Common;
 using Gham.Commands.Keyboard;
 using Gham.Helpers;
 using Gham.Helpers.Extensions;
+using Gham.Models;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
@@ -45,14 +46,14 @@ namespace Gham.Commands
 
         private Dictionary<string, MessageCommand> messageCommands;
         private Dictionary<string, MessageCommand> messageCommandsPriority;
-        private Dictionary<string, MessageCommand> inlineCommands;
+        private Dictionary<InlineCallbackCommands, MessageCommand> inlineCommands;
 
         public Router(ITelegramBotClient botClient)
         {
             _botClient              = botClient;
             messageCommands = new Dictionary<string, MessageCommand>();
             messageCommandsPriority = new Dictionary<string, MessageCommand>();
-            inlineCommands = new Dictionary<string, MessageCommand>();
+            inlineCommands = new Dictionary<InlineCallbackCommands, MessageCommand>();
             RegisterCommnad();
         }
 
@@ -120,24 +121,24 @@ namespace Gham.Commands
         public async Task ExecuteCommandByCallBack(Update update)
         {
             var command = InlineCallbackCommand.GetCommandByCallbackOrNull(update.CallbackQuery.Data);
-            if(command != null)
+            if (command != null)
             {
                 try
                 {
                     foreach (var commandCallback in inlineCommands)
                     {
-                        if (command.CommandName.ToLower() == commandCallback.Key.ToLower())
+                        if (command.CommandType == commandCallback.Key)
                         {
                             await commandCallback.Value(_botClient, update);
                             return;
                         }
                     }
 
-                    await Access.CommandMissing(_botClient, update, "CallBack - " + command.CommandName);
+                    await Access.CommandMissing(_botClient, update, "CallBack - " + command.CommandType);
                 }
                 catch (Exception ex)
                 {
-                    //TODO Logging
+                    TelegramService.GetInstance().InvokeErrorLog(ex);
                 }
             }
         }

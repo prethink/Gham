@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Gham.Models;
+using Gham.Models.CallbackCommands;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,15 +12,20 @@ namespace Gham.Helpers
 {
     public class InlineCallbackCommand : IInlineContent
     {
+        const int MAX_SIZE_CALLBACK_DATA = 128;
+
         [JsonIgnore]
         public string ButtonName { get; set; }
-        public string CommandName { get; set; }
-        public List<string> Argumnets { get; set; }
+        [JsonProperty("c")]
+        public InlineCallbackCommands CommandType { get; set; }
+        [JsonProperty("d")]
+        public CallbackBaseCommand Data { get; set; }
 
-        public InlineCallbackCommand(string commandName, List<string> args)
+        public InlineCallbackCommand(string buttonName, InlineCallbackCommands commandType, CallbackBaseCommand data)
         {
-            CommandName = commandName;
-            Argumnets = args;
+            ButtonName = buttonName;
+            CommandType = commandType;
+            Data = data;
         }
 
         public static InlineCallbackCommand GetCommandByCallbackOrNull(string data)
@@ -27,7 +34,7 @@ namespace Gham.Helpers
             {
                 return JsonConvert.DeserializeObject<InlineCallbackCommand>(data);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return null;
             }
@@ -40,7 +47,13 @@ namespace Gham.Helpers
 
         public object GetContent()
         {
-            return JsonConvert.SerializeObject(this);
+            var result = JsonConvert.SerializeObject(this);
+            var byteSize = result.Length * sizeof(Char);
+            if (byteSize > MAX_SIZE_CALLBACK_DATA)
+            {
+                throw new Exception($"Превышен лимит для callback_data {byteSize} > {MAX_SIZE_CALLBACK_DATA}. Попробуйте уменьшить количество данных в команде");
+            }
+            return result;
         }
     }
 

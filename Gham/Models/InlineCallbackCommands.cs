@@ -8,6 +8,6 @@ namespace Gham.Models
 {
     public enum InlineCallbackCommands : ushort
     {
-        TestCommand = 1111,
+        None = 594,
     }
 }

@@ -10,9 +10,50 @@ using Telegram.Bot.Types;
 
 namespace Gham.Helpers
 {
+    public class InlineCallbackCommand<T> : InlineCallbackCommand where T : CallbackBaseCommand
+    {
+        [JsonProperty("d")]
+        public T Data { get; set; }
+        [JsonConstructor]
+        public InlineCallbackCommand(string buttonName, InlineCallbackCommands commandType, T data) : base(buttonName, commandType, data)
+        {
+            ButtonName = buttonName;
+            CommandType = commandType;
+            Data = data;
+        }
+
+        public static InlineCallbackCommand<T> GetCommandByCallbackOrNull(string data)
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<InlineCallbackCommand<T>>(data);
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+        }
+
+        public string GetTextButton()
+        {
+            return ButtonName;
+        }
+
+        public object GetContent()
+        {
+            var result = JsonConvert.SerializeObject(this);
+            var byteSize = result.Length * sizeof(Char);
+            if (byteSize > MAX_SIZE_CALLBACK_DATA)
+            {
+                throw new Exception($"Превышен лимит для callback_data {byteSize} > {MAX_SIZE_CALLBACK_DATA}. Попробуйте уменьшить количество данных в команде");
+            }
+            return result;
+        }
+    }
+
     public class InlineCallbackCommand : IInlineContent
     {
-        const int MAX_SIZE_CALLBACK_DATA = 128;
+        public const int MAX_SIZE_CALLBACK_DATA = 128;
 
         [JsonIgnore]
         public string ButtonName { get; set; }
@@ -20,12 +61,19 @@ namespace Gham.Helpers
         public InlineCallbackCommands CommandType { get; set; }
         [JsonProperty("d")]
         public CallbackBaseCommand Data { get; set; }
-
+        [JsonConstructor]
         public InlineCallbackCommand(string buttonName, InlineCallbackCommands commandType, CallbackBaseCommand data)
         {
             ButtonName = buttonName;
             CommandType = commandType;
             Data = data;
+        }
+
+        public InlineCallbackCommand(string buttonName, InlineCallbackCommands commandType)
+        {
+            ButtonName = buttonName;
+            CommandType = commandType;
+            Data = new CallbackBaseCommand();
         }
 
         public static InlineCallbackCommand GetCommandByCallbackOrNull(string data)
@@ -101,7 +149,6 @@ namespace Gham.Helpers
             return ButtonName;
         }
     }
-
 
     public interface IInlineContent
     {

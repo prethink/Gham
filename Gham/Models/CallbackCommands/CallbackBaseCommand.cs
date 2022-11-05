@@ -10,10 +10,10 @@ namespace Gham.Models.CallbackCommands
     public class CallbackBaseCommand
     {
         [JsonProperty("0")]
-        public long MessageIdBase { get; set; }
-        public CallbackBaseCommand(long messageId)
+        public InlineCallbackCommands LastCommand { get; set; }
+        public CallbackBaseCommand(InlineCallbackCommands data = InlineCallbackCommands.None)
         {
-            MessageIdBase = messageId;
+            LastCommand = data;
         }
     }
 }

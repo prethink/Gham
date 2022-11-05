@@ -9,16 +9,22 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InputFiles;
 using Telegram.Bot.Types.ReplyMarkups;
 
 namespace Gham.Commands.Common
 {
     public class Message 
     {
-        public static async Task Send(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
+        public static async Task Send(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, string msg, OptionMessage option = null)
         {
-                long chatId = update.GetChatId();
+            await Send(botClient, update.GetChatId(), msg, option);
+        }
 
+        public static async Task Send(ITelegramBotClient botClient, long chatId, string msg, OptionMessage option = null)
+        {
+            try
+            {
                 if (string.IsNullOrWhiteSpace(msg))
                 {
                     return;
@@ -27,59 +33,78 @@ namespace Gham.Commands.Common
                 if (option == null)
                 {
                     var sentMessage = await botClient.SendTextMessageAsync(
-                         chatId: chatId,
-                         text: msg,
-                         parseMode: ParseMode.Html);
+                            chatId: chatId,
+                            text: msg,
+                            parseMode: ParseMode.Html);
                 }
                 else
                 {
                     if (option.ClearMenu)
                     {
                         var sentMessage = await botClient.SendTextMessageAsync(
-                             chatId: chatId,
-                             text: msg,
-                             parseMode: ParseMode.Html,
-                             replyMarkup: new ReplyKeyboardRemove());
+                                chatId: chatId,
+                                text: msg,
+                                parseMode: ParseMode.Html,
+                                replyMarkup: new ReplyKeyboardRemove());
                     }
                     else if (option.MenuReplyKeyboardMarkup != null)
                     {
                         var sentMessage = await botClient.SendTextMessageAsync(
-                             chatId: chatId,
+                                chatId: chatId,
                         text: msg,
-                             parseMode: ParseMode.Html,
-                             replyMarkup: option.MenuReplyKeyboardMarkup);
+                                parseMode: ParseMode.Html,
+                                replyMarkup: option.MenuReplyKeyboardMarkup);
                     }
                     else if (option.MenuInlineKeyboardMarkup != null)
                     {
                         var sentMessage = await botClient.SendTextMessageAsync(
-                             chatId: chatId,
-                        text: msg,
-                             parseMode: ParseMode.Html,
-                             replyMarkup: option.MenuInlineKeyboardMarkup);
+                                chatId: chatId,
+                                text: msg,
+                                parseMode: ParseMode.Html,
+                                replyMarkup: option.MenuInlineKeyboardMarkup);
                     }
                     else
                     {
                         throw new NotImplementedException();
                     }
                 }
-
+            }
+            catch (Exception ex)
+            {
+                TelegramService.GetInstance().InvokeErrorLog(ex);
+            }
         }
 
+        public static async Task SendPhoto(ITelegramBotClient botClient, long chatId, string msg, string filePath)
+        {
+            if (!System.IO.File.Exists(filePath))
+            {
+                await Send(botClient, chatId, msg);
+                return;
+            }
+
+            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                var photo = await botClient.SendPhotoAsync(
+                            chatId: chatId,
+                            photo: new InputOnlineFile(fileStream),
+                            caption: msg,
+                            parseMode: ParseMode.Html
+                            );
+            }
+        }
         public static async Task Edit(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
         {
      
                 long chatId = update.GetChatId();
-                long messageId = update.Message.MessageId;
+                int messageId = update.Message.MessageId;
 
 
 
-                //var sentMessage = await _botClient.EditMessageReplyMarkupAsync(
-                //        chatId: chatId,
-                //        messageId: messageId,
-                //        replyMarkup: inlineMenu,
-                //        cancellationToken: cancellationToken);
- 
+            var sentMessage = await botClient.EditMessageReplyMarkupAsync(
+                    chatId: chatId,
+                    messageId: messageId
+                );
         }
-
     }
 }

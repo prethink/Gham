@@ -66,7 +66,7 @@ namespace Gham
             }
             catch (Exception ex)
             {
-                //TODO Logging exception
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
         }
 
@@ -78,7 +78,7 @@ namespace Gham
             }
             catch (Exception ex)
             {
-                //TODO Logging exception
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
         }
 
@@ -117,18 +117,25 @@ namespace Gham
                     await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Photo:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Audio:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Video:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Voice:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Document:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Sticker:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Location:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Contact:
                     await HandleMessageContact(botClient, update, cancellationToken);
@@ -138,6 +145,7 @@ namespace Gham
                 case MessageType.Game:
                     break;
                 case MessageType.VideoNote:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Invoice:
                     break;
@@ -168,6 +176,7 @@ namespace Gham
                 case MessageType.MigratedFromGroup:
                     break;
                 case MessageType.Poll:
+                    await HandleMessageText(botClient, update, cancellationToken);
                     break;
                 case MessageType.Dice:
                     break;
@@ -192,11 +201,13 @@ namespace Gham
         {
             try
             {
-                await _router.ExecuteCommandByMessage(update.Message.Text, update);
+                string command = update.Message.Text ?? update.Message.Type.ToString();
+                await _router.ExecuteCommandByMessage(command, update);
+
             }
             catch (Exception ex)
             {
-                //TODO Logging exception
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
 
         }
@@ -209,7 +220,7 @@ namespace Gham
             }
             catch (Exception ex)
             {
-                //TODO Logging exception
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
         }
     }

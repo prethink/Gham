@@ -44,6 +44,7 @@ namespace Gham.Commands
         private Common.User _userCommand;
 
 
+        private Dictionary<string, MessageCommand> slashCommands;
         private Dictionary<string, MessageCommand> messageCommands;
         private Dictionary<string, MessageCommand> messageCommandsPriority;
         private Dictionary<InlineCallbackCommands, MessageCommand> inlineCommands;
@@ -54,127 +55,225 @@ namespace Gham.Commands
             messageCommands = new Dictionary<string, MessageCommand>();
             messageCommandsPriority = new Dictionary<string, MessageCommand>();
             inlineCommands = new Dictionary<InlineCallbackCommands, MessageCommand>();
+            slashCommands = new Dictionary<string, MessageCommand>();
             RegisterCommnad();
         }
 
         public void RegisterCommnad()
         {
-            var messageMethods = MethodFinder.FindMessageMenuHandlers();
-            var inlineMethods = MethodFinder.FindInlineMenuHandlers();
-            foreach (var method in messageMethods)
+            try
             {
-                bool priority = method.GetCustomAttribute<MessageMenuHandlerAttribute>().Priority;
-                foreach (var command in method.GetCustomAttribute<MessageMenuHandlerAttribute>().Commands)
+                var messageMethods = MethodFinder.FindMessageMenuHandlers();
+                var inlineMethods = MethodFinder.FindInlineMenuHandlers();
+                var slashCommandMethods = MethodFinder.FindSlashCommandHandlers();
+
+                foreach (var method in messageMethods)
                 {
-                    Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
-                    messageCommands.Add(command, (MessageCommand)serverMessageHandler);
-                    if(priority)
+                    bool priority = method.GetCustomAttribute<MessageMenuHandlerAttribute>().Priority;
+                    foreach (var command in method.GetCustomAttribute<MessageMenuHandlerAttribute>().Commands)
                     {
-                        messageCommandsPriority.Add(command, (MessageCommand)serverMessageHandler);
+                        Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
+                        messageCommands.Add(command, (MessageCommand)serverMessageHandler);
+                        if (priority)
+                        {
+                            messageCommandsPriority.Add(command, (MessageCommand)serverMessageHandler);
+                        }
+                    }
+                }
+
+                foreach (var method in inlineMethods)
+                {
+                    foreach (var command in method.GetCustomAttribute<InlineCallbackHandlerAttribute>().Commands)
+                    {
+                        Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
+                        inlineCommands.Add(command, (MessageCommand)serverMessageHandler);
+
+                    }
+                }
+
+                foreach (var method in slashCommandMethods)
+                {
+                    foreach (var command in method.GetCustomAttribute<SlashCommandAttribute>().Commands)
+                    {
+                        Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
+                        slashCommands.Add(command, (MessageCommand)serverMessageHandler);
+
                     }
                 }
             }
-
-            foreach (var method in inlineMethods)
+            catch (Exception ex)
             {
-                foreach (var command in method.GetCustomAttribute<InlineCallbackHandlerAttribute>().Commands)
-                {
-                    Delegate serverMessageHandler = Delegate.CreateDelegate(typeof(MessageCommand), method, false);
-                    inlineCommands.Add(command, (MessageCommand)serverMessageHandler);
-
-                }
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
         }
 
+        public async Task<bool> IsSlashCommand(string command, Update update)
+        {
+            try
+            {
+                if (!command.Contains("/"))
+                    return false;
 
+                foreach (var commandExecute in slashCommands)
+                {
+                    if (command.ToLower().Contains(commandExecute.Key.ToLower()))
+                    {
+                        var privilages = commandExecute.Value.Method.GetCustomAttribute<AccessAttribute>();
+                        if (privilages != null && privilages.RequiredPrivilege != null)
+                        {
+                            //TODO: Check is privilage
+                        }
+                        else
+                        {
+                            await commandExecute.Value(_botClient, update);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                TelegramService.GetInstance().InvokeErrorLog(ex);
+                return false;
+            }
+
+        }
 
         public async Task ExecuteCommandByMessage(string command, Update update)
         {
             try
             {
-                if(await StartHasDeepLink(command, update))
+                if (await StartHasDeepLink(command, update))
                     return;
 
-                if(await IsHaveNextStep(command,update))
+                if (await IsHaveNextStep(command, update))
+                    return;
+
+                if (await IsSlashCommand(command, update))
                     return;
 
                 foreach (var commandExecute in messageCommands)
                 {
+
                     if (command.ToLower() == commandExecute.Key.ToLower())
                     {
-                        await commandExecute.Value(_botClient,update);
+                        var privilages = commandExecute.Value.Method.GetCustomAttribute<AccessAttribute>();
+                        if (privilages != null && privilages.RequiredPrivilege != null)
+                        {
+                            //TODO: Check is privilage
+                        }
+                        else
+                        {
+                            await commandExecute.Value(_botClient, update);
+                        }
+
                         return;
                     }
                 }
 
-                await Access.CommandMissing(_botClient,update);
+                await Access.CommandMissing(_botClient, update);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                //TODO Logging
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
-
         }
-
-
 
         public async Task ExecuteCommandByCallBack(Update update)
         {
-            var command = InlineCallbackCommand.GetCommandByCallbackOrNull(update.CallbackQuery.Data);
-            if (command != null)
+            try
             {
-                try
+                var command = InlineCallbackCommand.GetCommandByCallbackOrNull(update.CallbackQuery.Data);
+                if (command != null)
                 {
                     foreach (var commandCallback in inlineCommands)
                     {
                         if (command.CommandType == commandCallback.Key)
                         {
-                            await commandCallback.Value(_botClient, update);
+                            var privilages = commandCallback.Value.Method.GetCustomAttribute<AccessAttribute>();
+                            if (privilages != null && privilages.RequiredPrivilege != null)
+                            {
+                                //TODO: Check is privilage
+                            }
+                            else
+                            {
+                                await commandCallback.Value(_botClient, update);
+                            }
                             return;
                         }
                     }
 
                     await Access.CommandMissing(_botClient, update, "CallBack - " + command.CommandType);
                 }
-                catch (Exception ex)
-                {
-                    TelegramService.GetInstance().InvokeErrorLog(ex);
-                }
+
+            }
+            catch (Exception ex)
+            {
+                TelegramService.GetInstance().InvokeErrorLog(ex);
             }
         }
 
         public async Task<bool> IsHaveNextStep(string command, Update update)
         {
-            if (update.HasStep())
+            try
             {
-                foreach (var commandExecute in messageCommandsPriority)
+                if (update.HasStep())
                 {
-                    if (command.ToLower() == commandExecute.Key.ToLower())
+                    foreach (var commandExecute in messageCommandsPriority)
                     {
-                        await commandExecute.Value(_botClient, update);
-                        return true;
+                        if (command.ToLower() == commandExecute.Key.ToLower())
+                        {
+                            await commandExecute.Value(_botClient, update);
+                            return true;
+                        }
                     }
-                }
-                await update.GetStepOrNull().Value(_botClient, update);
-                return true;
-            }
-            return false;
-        }
 
-        public async Task<bool> StartHasDeepLink(string command, Update update)
-        {
-            if (command.ToLower().Contains("start") && command.Contains(" "))
-            {
-                var spl = command.Split(' ');
-                if (!string.IsNullOrEmpty(spl[1]))
-                {
-                    await Access.StartWithArguments(_botClient, update, spl[1]);
+                    var cmd = update.GetStepOrNull().Value;
+
+                    var privilages = cmd.Method.GetCustomAttribute<AccessAttribute>();
+                    if (privilages != null && privilages.RequiredPrivilege != null)
+                    {
+                        //TODO: Check is privilage
+                    }
+                    else
+                    {
+                        await cmd(_botClient, update);
+                    }
                     return true;
                 }
                 return false;
             }
+            catch (Exception ex)
+            {
+                TelegramService.GetInstance().InvokeErrorLog(ex);
+                return false;
+            }
 
-            return false;
+        }
+
+        public async Task<bool> StartHasDeepLink(string command, Update update)
+        {
+            try
+            {
+                if (command.ToLower().Contains("start") && command.Contains(" "))
+                {
+                    var spl = command.Split(' ');
+                    if (!string.IsNullOrEmpty(spl[1]))
+                    {
+                        await Access.StartWithArguments(_botClient, update, spl[1]);
+                        return true;
+                    }
+                    return false;
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                TelegramService.GetInstance().InvokeErrorLog(ex);
+                return false;
+            }
         }
     }
 }

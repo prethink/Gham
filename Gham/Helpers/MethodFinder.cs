@@ -20,6 +20,11 @@ namespace Gham.Helpers
             return FindMethods(typeof(InlineCallbackHandlerAttribute));
         }
 
+        public static MethodInfo[] FindSlashCommandHandlers()
+        {
+            return FindMethods(typeof(SlashCommandAttribute));
+        }
+
         public static MethodInfo[] FindMethods(Type type)
         {
             string thisAssemblyName = Assembly.GetExecutingAssembly().GetName().FullName;

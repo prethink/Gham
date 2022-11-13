@@ -1,16 +1,31 @@
-﻿using Telegram.Bot;
+﻿using System.ComponentModel;
+using Telegram.Bot;
 using Telegram.Bot.Extensions.Polling;
 
 namespace Gham
 {
     public class TelegramService
     {
+        public enum TelegramEvents
+        {
+            [Description("Initialization")]
+            Initialization,
+            [Description("Register")]
+            Register,
+            [Description("Message")]
+            Message,
+            [Description("Server")]
+            Server,
+            [Description("BlockedBot")]
+            BlockedBot
+        }
+
         private ITelegramBotClient _botClient;
         private Handler _handler;
         private CancellationTokenSource _cts;
         private ReceiverOptions _options;
         public delegate void ErrorEvent(Exception ex);
-        public delegate void CommonEvent(string msg);
+        public delegate void CommonEvent(string msg, TelegramEvents typeEvent, ConsoleColor color);
         public event ErrorEvent OnLogError;
         public event CommonEvent OnLogCommon;
 
@@ -99,9 +114,9 @@ namespace Gham
             }
         }
 
-        public void InvokeCommonLog(string msg)
+        public void InvokeCommonLog(string msg, TelegramEvents typeEvent = TelegramEvents.Message, ConsoleColor color = ConsoleColor.Blue)
         {
-            OnLogCommon?.Invoke(msg);
+            OnLogCommon?.Invoke(msg, typeEvent, color);
         }
 
         public void InvokeErrorLog(Exception ex)

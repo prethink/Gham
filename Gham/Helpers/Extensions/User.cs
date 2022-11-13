@@ -20,5 +20,21 @@ namespace Gham.Helpers.Extensions
 
             throw new Exception("Не удалось получить чат ID");
         }
+
+        public static int GetMessageId(this Update update)
+        {
+            var data = update.GetCacheData();
+            if (data?.BotMessage?.MessageId > 0)
+            {
+                var messageId = data.BotMessage.MessageId;
+                return messageId;
+            }
+
+            if (update.CallbackQuery != null)
+                return update.CallbackQuery.Message.MessageId;
+
+
+            throw new Exception("Не удалось получить ID чата");
+        }
     }
 }

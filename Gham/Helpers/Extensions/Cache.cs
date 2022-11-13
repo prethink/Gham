@@ -18,18 +18,18 @@ namespace Gham.Helpers.Extensions
             _userHandlerData.Add(userId, new UserCache());
         }
 
-        public static KeyValuePair<long, UserCache> GetCacheData(this Update update)
+        public static UserCache GetCacheData(this Update update)
         {
             long userId = update.GetChatId();
             var data = _userHandlerData.FirstOrDefault(x => x.Key == userId);
             if (data.Equals(default(KeyValuePair<long, UserCache>)))
             {
                 CreateCacheData(update);
-                return _userHandlerData.FirstOrDefault(x => x.Key == userId);
+                return _userHandlerData.FirstOrDefault(x => x.Key == userId).Value;
             }
             else
             {
-                return data;
+                return data.Value;
             }
         }
 
@@ -38,7 +38,7 @@ namespace Gham.Helpers.Extensions
             long userId = update.GetChatId();
             if (HasCacheData(update))
             {
-                _userHandlerData.Remove(userId);
+                _userHandlerData.FirstOrDefault(x => x.Key == userId).Value.ClearData();
             }
 
         }
@@ -52,6 +52,13 @@ namespace Gham.Helpers.Extensions
 
     public class UserCache
     {
+        public Telegram.Bot.Types.Message BotMessage { get; set; }
+        public List<Telegram.Bot.Types.Message> MyMessage { get; set; } = new();
 
+        public void ClearData()
+        {
+            this.BotMessage = null;
+            this.MyMessage = null;
+        }
     }
 }

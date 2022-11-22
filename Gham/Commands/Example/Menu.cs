@@ -1,4 +1,5 @@
 ﻿using Gham.Attributes;
+using Gham.Commands.Common;
 using Gham.Helpers;
 using System;
 using System.Collections.Generic;
@@ -8,14 +9,13 @@ using System.Threading.Tasks;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 
-namespace Gham.Commands.Keyboard
+namespace Gham.Commands.Example
 {
     public class Menu
     {
-        [MessageMenuHandler(true,Router.MENU, Router.MAIN_MENU)]
+        [MessageMenuHandler(true, Router.MENU, Router.MAIN_MENU)]
         public static async Task MainMenu(ITelegramBotClient botClient, Update update)
         {
-
             int columnCount = 1;
             var menuList = new List<string>();
 

@@ -1,6 +1,5 @@
 ﻿using Gham.Attributes;
-using Gham.Commands.Common;
-using Gham.Commands.Keyboard;
+using Gham.Commands.Example;
 using Gham.Helpers;
 using Gham.Helpers.Extensions;
 using Gham.Models;
@@ -38,11 +37,6 @@ namespace Gham.Commands
         private Dictionary<string, MessageCommand> _commands = new Dictionary<string, MessageCommand>();
         private ITelegramBotClient _botClient;
 
-        private Access _accessCommand;
-        private Keyboard.Menu _menuKeyboardCommand;
-        private Inline.Menu _menuInlineCommand;
-        private Common.User _userCommand;
-
 
         private Dictionary<string, MessageCommand> slashCommands;
         private Dictionary<string, MessageCommand> messageCommands;
@@ -51,11 +45,11 @@ namespace Gham.Commands
 
         public Router(ITelegramBotClient botClient)
         {
-            _botClient              = botClient;
-            messageCommands = new Dictionary<string, MessageCommand>();
-            messageCommandsPriority = new Dictionary<string, MessageCommand>();
-            inlineCommands = new Dictionary<InlineCallbackCommands, MessageCommand>();
-            slashCommands = new Dictionary<string, MessageCommand>();
+            _botClient                  = botClient;
+            messageCommands             = new Dictionary<string, MessageCommand>();
+            messageCommandsPriority     = new Dictionary<string, MessageCommand>();
+            inlineCommands              = new Dictionary<InlineCallbackCommands, MessageCommand>();
+            slashCommands               = new Dictionary<string, MessageCommand>();
             RegisterCommnad();
         }
 

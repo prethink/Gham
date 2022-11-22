@@ -15,7 +15,7 @@ using static Gham.TelegramService;
 
 namespace Gham.Commands.Common
 {
-    public class Message 
+    public class Message
     {
         public static async Task<MessageId> CopyMessage(ITelegramBotClient botClient, Telegram.Bot.Types.Message message, long chatId)
         {
@@ -28,7 +28,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
                 return null;
             }
         }
@@ -47,17 +47,17 @@ namespace Gham.Commands.Common
                     }
                     catch (Exception ex)
                     {
-                        TelegramService.GetInstance().InvokeErrorLog(ex);
+                        GetInstance().InvokeErrorLog(ex);
                     }
                 }
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
             }
         }
 
-        public static async Task<Telegram.Bot.Types.Message> Send(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, string msg, OptionMessage option = null)
+        public static async Task<Telegram.Bot.Types.Message> Send(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
         {
             var message = await Send(botClient, update.GetChatId(), msg, option);
             return message;
@@ -113,18 +113,18 @@ namespace Gham.Commands.Common
                 }
 
 
-                TelegramService.GetInstance().InvokeCommonLog($"Бот отправил ответ пользователю с id {chatId}\n{msg}", TelegramEvents.Server, ConsoleColor.White);
+                GetInstance().InvokeCommonLog($"Бот отправил ответ пользователю с id {chatId}\n{msg}", TelegramEvents.Server, ConsoleColor.White);
                 return message;
             }
             catch (Exception ex)
             {
                 if (ex.Message.Contains("bot was blocked by the user"))
                 {
-                    TelegramService.GetInstance().InvokeErrorLog(ex);
+                    GetInstance().InvokeErrorLog(ex);
                 }
                 else
                 {
-                    TelegramService.GetInstance().InvokeErrorLog(ex);
+                    GetInstance().InvokeErrorLog(ex);
                 }
 
 
@@ -182,7 +182,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
             }
 
         }
@@ -228,7 +228,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
                 return null;
             }
 
@@ -255,7 +255,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
             }
         }
 
@@ -292,13 +292,13 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
                 return null;
             }
 
         }
 
-        public static async Task<Telegram.Bot.Types.Message> Edit(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, string msg, OptionMessage option = null)
+        public static async Task<Telegram.Bot.Types.Message> Edit(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
         {
             try
             {
@@ -310,7 +310,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
                 return null;
             }
         }
@@ -348,13 +348,13 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
                 return null;
             }
 
         }
 
-        public static async Task<Telegram.Bot.Types.Message> EditCaption(ITelegramBotClient botClient, Telegram.Bot.Types.Update update, string msg, OptionMessage option = null)
+        public static async Task<Telegram.Bot.Types.Message> EditCaption(ITelegramBotClient botClient, Update update, string msg, OptionMessage option = null)
         {
             try
             {
@@ -366,7 +366,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
                 return null;
             }
         }
@@ -379,7 +379,7 @@ namespace Gham.Commands.Common
             }
             catch (Exception ex)
             {
-                TelegramService.GetInstance().InvokeErrorLog(ex);
+                GetInstance().InvokeErrorLog(ex);
             }
         }
     }

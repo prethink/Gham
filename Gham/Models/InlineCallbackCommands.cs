@@ -9,5 +9,8 @@ namespace Gham.Models
     public enum InlineCallbackCommands : ushort
     {
         None = 594,
+        CalendarGetYear,
+        CalendarGetMonth,
+        CalendarGetDate,
     }
 }

@@ -58,7 +58,7 @@ namespace Gham.Helpers.Extensions
         public void ClearData()
         {
             this.BotMessage = null;
-            this.MyMessage = null;
+            this.MyMessage.Clear();
         }
     }
 }
